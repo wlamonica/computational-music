@@ -1,24 +1,33 @@
 import numpy as np
 import librosa
 
+def diag_bsm_averages(bsm):
+        bsm_shortened = bsm[:, 1:-1]
+        diags = np.zeros(bsm_shortened.shape[1])
+        for i in range(diags.shape[0]):
+            diags[i] = bsm_shortened.diagonal(offset = i).mean()
+        diags_inv = diags.max() - diags
+        for i in range(diags_inv.shape[0]):
+            is_peak =  not(i > 0 and diags_inv[i] < diags_inv[i - 1]) and \
+                        not(i < (diags_inv.shape[0] - 1) and diags_inv[i] < diags_inv[i + 1])
+            diags_inv[i] = diags_inv[i] * 1.5 if is_peak else diags_inv[i]
+        return diags_inv
+
 def compute_bsm(audio, sr):
         tempo, beat_times = librosa.beat.beat_track(y=audio, sr=sr, units="time")
         n_fft = 1024
         hop_length = 512
-        # spectrogram = librosa.feature.melspectrogram(y=x, sr=sr, n_fft=n_fft, hop_length=hop_length)
         spectrogram = librosa.stft(y=audio, n_fft=n_fft, hop_length=hop_length)
         freqs = librosa.fft_frequencies(sr=sr, n_fft=n_fft)
         spectrogram = spectrogram[freqs <= 5000]
-        # logS = librosa.amplitude_to_db(abs(spectrogram))
         logS = abs(spectrogram)
 
-        def get_asm_val(beat1_frame, beat2_frame, beat_frame_length, similarity_matrix_builder = cosine_similarity):
+        def get_asm_val(beat1_frame, beat2_frame, beat_frame_length):
             max_frame1 = min(beat1_frame + beat_frame_length, logS.shape[1]) 
             max_frame2 = min(beat2_frame + beat_frame_length, logS.shape[1]) 
             frames_1 = logS[: , beat1_frame : max_frame1]
             frames_2 = logS[: , beat2_frame : max_frame2]
 
-            asm = 1 - similarity_matrix_builder(frames_1.T, frames_2.T)
             comparison_width_pct = 0.2
             D, wp = librosa.sequence.dtw(X=frames_1.T, Y=frames_2.T, metric = 'cosine', band_rad=comparison_width_pct)
             final_val = D[-1,-1]
