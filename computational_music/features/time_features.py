@@ -1,18 +1,6 @@
 import numpy as np
 import librosa
 
-def diag_bsm_averages(bsm):
-        bsm_shortened = bsm[:, 1:-1]
-        diags = np.zeros(bsm_shortened.shape[1])
-        for i in range(diags.shape[0]):
-            diags[i] = bsm_shortened.diagonal(offset = i).mean()
-        diags_inv = diags.max() - diags
-        for i in range(diags_inv.shape[0]):
-            is_peak =  not(i > 0 and diags_inv[i] < diags_inv[i - 1]) and \
-                        not(i < (diags_inv.shape[0] - 1) and diags_inv[i] < diags_inv[i + 1])
-            diags_inv[i] = diags_inv[i] * 1.5 if is_peak else diags_inv[i]
-        return diags_inv
-
 def compute_bsm(audio, sr):
         tempo, beat_times = librosa.beat.beat_track(y=audio, sr=sr, units="time")
         n_fft = 1024
