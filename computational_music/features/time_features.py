@@ -1,6 +1,18 @@
 import numpy as np
 import librosa
 
+def diag_bsm_averages(bsm):
+        bsm_shortened = bsm[:, 1:-1]
+        diags = np.zeros(bsm_shortened.shape[1])
+        for i in range(diags.shape[0]):
+            diags[i] = bsm_shortened.diagonal(offset = i).mean()
+        diags_inv = diags.max() - diags
+        for i in range(diags_inv.shape[0]):
+            is_peak =  not(i > 0 and diags_inv[i] < diags_inv[i - 1]) and \
+                        not(i < (diags_inv.shape[0] - 1) and diags_inv[i] < diags_inv[i + 1])
+            diags_inv[i] = diags_inv[i] * 1.5 if is_peak else diags_inv[i]
+        return diags_inv
+
 def compute_bsm(audio, sr):
         tempo, beat_times = librosa.beat.beat_track(y=audio, sr=sr, units="time")
         n_fft = 1024
@@ -35,27 +47,20 @@ def compute_bsm(audio, sr):
 
         return bsm
 
-def meter_estimator(audio, sr, candidates = [2,3,4,5,6,7,8,9,11,12]):
-    def diag_bsm_averages(bsm):
-        bsm_shortened = bsm[:, 1:-1]
-        diags = np.zeros(bsm_shortened.shape[1])
-        for i in range(diags.shape[0]):
-            diags[i] = bsm_shortened.diagonal(offset = i).mean()
-        diags_inv = diags.max() - diags
-        return diags_inv
-    
+def bsm_meter_estimator(audio, sr, candidates = [2,3,4,5,6,7,8,9,11,12]):
     def pick_meter(diag_similarity_avg, candidates = [2,3,4,5,6,7,8,9,11,12]):
         def tc(diag_similarity_avg, c):
-            pmax = diag_similarity_avg.shape[0] // c
+            if diag_similarity_avg.shape[0] // c <= 1:
+                    return 0
             p_array = np.arange(1, diag_similarity_avg.shape[0] // c)
             pick_idx = p_array * c
             picks = diag_similarity_avg[pick_idx]
-            denom = 1 / (1 - (p_array - 1) / pmax)
-            return (picks * denom).mean()
+            denom = 1 / p_array**(1.2)
+            return (picks * denom).sum()
         max_candidate = candidates[0]
         max_tc = 0
         for c in candidates:
-            for i in range(0,c):
+            for i in range(0,int(diag_similarity_avg.shape[0] // 2)):
                 d = diag_similarity_avg[i:]
                 tc_new = tc(d, c)
                 if max_tc < tc_new:
@@ -66,4 +71,4 @@ def meter_estimator(audio, sr, candidates = [2,3,4,5,6,7,8,9,11,12]):
     
     bsm = compute_bsm(audio, sr)
     diags = diag_bsm_averages(bsm)
-    return pick_meter(diags, candidates=candidates)
+    return pick_meter(diags, candidates=candidates), bsm
