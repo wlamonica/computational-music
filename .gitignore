@@ -1,4 +1,10 @@
-data/
 __pycache__/
 *.pdf
 papers/
+*.m4a
+*.wav
+*.mp3
+*.zip
+computational_music/data/*
+!computational_music/data/**/*.py
+!computational_music/data/itunes.ipynb
