@@ -1,7 +1,9 @@
 import numpy as np
 import librosa
 
-def diag_bsm_averages(bsm):
+def diag_bsm_averages(bsm: np.ndarray) -> np.ndarray:
+        '''Given a beat similarity matrix, return an array containing the average distance for each offset,
+        starting at 1'''
         bsm_shortened = bsm[:, 1:-1]
         diags = np.zeros(bsm_shortened.shape[1])
         for i in range(diags.shape[0]):
@@ -13,7 +15,8 @@ def diag_bsm_averages(bsm):
             diags_inv[i] = diags_inv[i] * 1.5 if is_peak else diags_inv[i]
         return diags_inv
 
-def compute_bsm(audio, sr):
+def compute_bsm(audio , sr):
+        '''Computes the beat similarity matrix of the entire audio clip given'''
         tempo, beat_times = librosa.beat.beat_track(y=audio, sr=sr, units="time")
         n_fft = 1024
         hop_length = 512
@@ -48,8 +51,13 @@ def compute_bsm(audio, sr):
         return bsm
 
 def bsm_meter_estimator(audio, sr, candidates = [2,3,4,5,6,7,8,9,11,12]):
+    '''Estimates the meter of the given audio clip using a beat similarity matrix and comb filter to pick from 
+    a given set of candidate meters
+    
+    Note: In alpha version, often gives 2 or 3 for meters that should be a multiple'''
     def pick_meter(diag_similarity_avg, candidates = [2,3,4,5,6,7,8,9,11,12]):
-        def tc(diag_similarity_avg, c):
+        def comb_filter(diag_similarity_avg, c):
+            '''Comb filter'''
             if diag_similarity_avg.shape[0] // c <= 1:
                     return 0
             p_array = np.arange(1, diag_similarity_avg.shape[0] // c)
@@ -62,7 +70,7 @@ def bsm_meter_estimator(audio, sr, candidates = [2,3,4,5,6,7,8,9,11,12]):
         for c in candidates:
             for i in range(0,int(diag_similarity_avg.shape[0] // 2)):
                 d = diag_similarity_avg[i:]
-                tc_new = tc(d, c)
+                tc_new = comb_filter(d, c)
                 if max_tc < tc_new:
                     max_tc = tc_new
                     max_candidate = c
@@ -75,5 +83,7 @@ def bsm_meter_estimator(audio, sr, candidates = [2,3,4,5,6,7,8,9,11,12]):
     return meter, bsm
 
 def bsm_meter_estimator_path(path):
+    '''Estimates the meter of the audio clip at the given path's location using a beat similarity matrix and comb filter to pick from 
+    a given set of candidate meters. See documentation of bsm_meter_estimator'''
     x, sr = librosa.load(path)
     return bsm_meter_estimator(x, sr)
