@@ -42,7 +42,7 @@ def compute_bsm(audio , sr):
         bsm = np.zeros((len(beat_frames), len(beat_frames)))
 
         for i in range(len(beat_frames) - 1):
-            for j in range(len(beat_frames) - 1):
+            for j in range(i,len(beat_frames) - 1):
                 try: 
                     bsm[i,j] = get_asm_val(int(beat_frames[i]), int(beat_frames[j]), beat_frame_length)
                 except Exception as e:
