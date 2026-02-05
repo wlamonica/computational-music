@@ -6,5 +6,6 @@ papers/
 *.mp3
 *.zip
 computational_music/data/*
+computational_music/results/*
 !computational_music/data/**/*.py
 !computational_music/data/itunes.ipynb
