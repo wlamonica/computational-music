@@ -71,4 +71,9 @@ def bsm_meter_estimator(audio, sr, candidates = [2,3,4,5,6,7,8,9,11,12]):
     
     bsm = compute_bsm(audio, sr)
     diags = diag_bsm_averages(bsm)
-    return pick_meter(diags, candidates=candidates), bsm
+    meter = pick_meter(diags, candidates=candidates)
+    return meter, bsm
+
+def bsm_meter_estimator_path(path):
+    x, sr = librosa.load(path)
+    return bsm_meter_estimator(x, sr)
