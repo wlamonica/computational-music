@@ -1,7 +1,8 @@
 # Computational Music
-An exploration and collection of projects related to Music Information Retrieval (MIR) and Computational Music Analysis in general  
+An exploration and collection of projects related to Music Information Retrieval (MIR) and Computational Music Analysis in general. Much of this, especially in the beginning, will be formatted more as a public journal of my learning process.  
 **Start Date**: January 2026  
-**Last Major Development**: January 2026, Time Signature Estimation Paper Implementation
+**Last Major Development**: January 2026, Time Signature Estimation Paper Implementation  
+**Last Minor Development**: February 2026, multiprocessing-based function runner (for the purpose of testing functions quickly)
 
 ## Goals
 ### Paper Replication
@@ -9,9 +10,9 @@ Especially at the start of this project, I want to replicate papers on various M
 When possible, I also want to take liberties in the implementation of the paper paper to improve results
 ### Development of MIR modules
 Using the techniques learned from replicating and reading papers, I want to be able to develop my own modules to perform common MIR tasks. My greatest areas of interest are **Meter/Time Signature Detection** and **Chord Recognition**. 
-## Recently Completed 
-### Beat Similarity Matrix Based Time Signature Estimator - Alpha version
-Created an untested (I currently lack data) version of the time signature estimator [in this paper](https://ieeexplore.ieee.org/abstract/document/4959587), which does the following:
+## Major Developments
+### Beat Similarity Matrix Based Time Signature Estimator (Alpha version) - January 25th 2026
+Created an untested version of the time signature estimator [in this paper](https://ieeexplore.ieee.org/abstract/document/4959587), which does the following:
 - Uses a spectrogram of the STFT of the audio
 - Uses onset correlation to estimate the beat times in the piece 
 - To create the BSM, for every pair of beats:
@@ -22,6 +23,13 @@ Created an untested (I currently lack data) version of the time signature estima
 - For every positive horizontal offset, compute the average of the diagonal values of the BSM (wrt to the offset). Call this array $d$
 - Use a comb filter (see code) to pick the best out of a set of candidates for meter by picking candidates whose multiples have indices in $d$ that are consistently high
 
+## Recently Completed 
+### Multiprocessing-based function wrapper - February 4th 2026
+### Beatles data gathering itunes.ipynb - February 3rd 2026
+Due to the fact that I have a dataset of beatles songs that contain the songs' meters, I wanted to get the audio for those songs to test my BSM-based meter estimator. I used the itunes search API to get 30-second previews for each song, getting the first song that came up. 
+### Beat Similarity Matrix Based Time Signature Estimator (Alpha version) - January 25th 2026
+Created an untested (I currently lack data) version of the time signature estimator [in this paper](https://ieeexplore.ieee.org/abstract/document/4959587)
+
 Next steps:
-- Use beatles dataset containing meter combined with Itunes audio to test meter detection
+- 
 
